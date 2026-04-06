@@ -2,6 +2,8 @@ import { WordDocument } from './word-document';
 import { DocumentParser } from './document-parser';
 import { HtmlRenderer } from './html-renderer';
 import { h } from './html';
+import { DocxEditor, EditorState, EditorOptions } from './editor/docx-editor';
+import { exportToDocx, exportAndDownload } from './editor/docx-exporter';
 
 export interface Options {
     inWrapper: boolean;
@@ -74,4 +76,18 @@ export async function renderAsync(data: Blob | any, bodyContainer: HTMLElement, 
     }
     
     return doc;
+}
+
+// ========== Editor API ==========
+export { DocxEditor, EditorState, EditorOptions, exportToDocx, exportAndDownload };
+
+/**
+ * Create a DocxEditor instance attached to the given container.
+ * Typically called after renderAsync to enable editing on the rendered content.
+ * @param container - The DOM element containing rendered docx content
+ * @param options - Optional editor configuration
+ * @returns A DocxEditor instance with formatting and export APIs
+ */
+export function createEditor(container: HTMLElement, options?: EditorOptions): DocxEditor {
+    return new DocxEditor(container, options);
 }

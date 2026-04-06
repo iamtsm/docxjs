@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOCX Editor - 文档编辑器</title>
+    <link rel="stylesheet" href="editor.css">
+    <!-- JSZip dependency (shared with docx-preview) -->
+    <script crossorigin src="https://unpkg.com/jszip/dist/jszip.min.js"></script>
+    <!-- docx-preview library for opening .docx files -->
+    <script src="dist/docx-preview.js"></script>
+    <!-- DOCX exporter module -->
+    <script src="docx-exporter.js"></script>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="logo">📝 DOCX Editor</span>
+        <button class="btn btn-new" id="btn-new" title="新建文档 (Ctrl+N)">新建</button>
+        <button class="btn btn-open" title="打开 .docx 文件">
+            打开
+            <input type="file" id="file-input" accept=".docx">
+        </button>
+        <button class="btn btn-export" id="btn-export" title="导出为 .docx (Ctrl+S)">导出 Word</button>
+        <div class="spacer"></div>
+        <span class="file-name" id="file-name">未命名文档</span>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <!-- Heading -->
+        <div class="toolbar-group">
+            <span class="toolbar-label">段落</span>
+            <select id="select-heading" title="段落样式 / 标题">
+                <option value="" disabled selected>标题</option>
+                <option value="p">正文</option>
+                <option value="h1">标题 1</option>
+                <option value="h2">标题 2</option>
+                <option value="h3">标题 3</option>
+                <option value="h4">标题 4</option>
+                <option value="h5">标题 5</option>
+                <option value="h6">标题 6</option>
+            </select>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Font Size -->
+        <div class="toolbar-group">
+            <span class="toolbar-label">字号</span>
+            <select id="select-font-size" title="字体大小">
+                <option value="" disabled selected>大小</option>
+                <option value="8pt">8</option>
+                <option value="9pt">9</option>
+                <option value="10pt">10</option>
+                <option value="10.5pt">10.5</option>
+                <option value="11pt">11</option>
+                <option value="12pt">12</option>
+                <option value="14pt">14</option>
+                <option value="16pt">16</option>
+                <option value="18pt">18</option>
+                <option value="20pt">20</option>
+                <option value="22pt">22</option>
+                <option value="24pt">24</option>
+                <option value="26pt">26</option>
+                <option value="28pt">28</option>
+                <option value="36pt">36</option>
+                <option value="48pt">48</option>
+                <option value="72pt">72</option>
+            </select>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Text Formatting -->
+        <div class="toolbar-group">
+            <button id="btn-bold" title="加粗 (Ctrl+B)"><b>B</b></button>
+            <button id="btn-italic" title="斜体 (Ctrl+I)"><i>I</i></button>
+            <button id="btn-underline" title="下划线 (Ctrl+U)"><u>U</u></button>
+            <button id="btn-strike" title="删除线"><s>S</s></button>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Font Color -->
+        <div class="toolbar-group">
+            <span class="toolbar-label">颜色</span>
+            <input type="color" id="input-color" value="#000000" title="字体颜色">
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Alignment -->
+        <div class="toolbar-group">
+            <button id="btn-align-left" title="左对齐">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="2" y="2" width="12" height="1.5"/>
+                    <rect x="2" y="5.5" width="8" height="1.5"/>
+                    <rect x="2" y="9" width="12" height="1.5"/>
+                    <rect x="2" y="12.5" width="8" height="1.5"/>
+                </svg>
+            </button>
+            <button id="btn-align-center" title="居中对齐">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="2" y="2" width="12" height="1.5"/>
+                    <rect x="4" y="5.5" width="8" height="1.5"/>
+                    <rect x="2" y="9" width="12" height="1.5"/>
+                    <rect x="4" y="12.5" width="8" height="1.5"/>
+                </svg>
+            </button>
+            <button id="btn-align-right" title="右对齐">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="2" y="2" width="12" height="1.5"/>
+                    <rect x="6" y="5.5" width="8" height="1.5"/>
+                    <rect x="2" y="9" width="12" height="1.5"/>
+                    <rect x="6" y="12.5" width="8" height="1.5"/>
+                </svg>
+            </button>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Lists -->
+        <div class="toolbar-group">
+            <button id="btn-ordered-list" title="编号列表">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <text x="1" y="5" font-size="5" font-family="sans-serif">1.</text>
+                    <rect x="6" y="2" width="9" height="1.5"/>
+                    <text x="1" y="10" font-size="5" font-family="sans-serif">2.</text>
+                    <rect x="6" y="7.5" width="9" height="1.5"/>
+                    <text x="1" y="15" font-size="5" font-family="sans-serif">3.</text>
+                    <rect x="6" y="13" width="9" height="1.5"/>
+                </svg>
+            </button>
+            <button id="btn-unordered-list" title="符号列表">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                    <circle cx="3" cy="3" r="1.5"/>
+                    <rect x="6" y="2" width="9" height="1.5"/>
+                    <circle cx="3" cy="8.5" r="1.5"/>
+                    <rect x="6" y="7.5" width="9" height="1.5"/>
+                    <circle cx="3" cy="14" r="1.5"/>
+                    <rect x="6" y="13" width="9" height="1.5"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Editor Area -->
+    <div class="editor-area">
+        <div id="editor-page" class="editor-page" contenteditable="true" spellcheck="true">
+        </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span id="status-text">就绪</span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Editor logic (must be after DOM) -->
+    <script src="editor.js"></script>
+</body>
+</html>
